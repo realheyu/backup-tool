@@ -1,0 +1,45 @@
+name = "mysql"
+backup_dir = "./backups"
+keep_days = 7          # 本机保留天数，必须大于 0；同步失败、损坏或中断残留的备份也到期清理
+timeout = "30m"
+
+[mysql]
+host = "127.0.0.1"   # 本机或远程数据库地址；Docker 填宿主机可达地址
+port = 3306          # 数据库端口；Docker 填映射后的端口
+user = "backup"
+databases = ["your_business_db"] # 必填：明确列出业务库；每库一个文件，不允许空列表
+
+# 运行本工具的机器需要安装兼容版本的 mysqldump。
+# 默认从 PATH 查找，也可指定本机可执行文件的绝对路径：
+# dump_binary = "/usr/bin/mysqldump"
+# 本机 socket 连接时删除上面的 host、port：
+# socket = "/var/run/mysqld/mysqld.sock"
+
+# 已有本机客户端配置可直接使用，不用再填密码。
+# 或选择以下一种认证方式；也可运行时加 --ask-password：
+# defaults_file = "./mysql-client.cnf"  # 本机路径，相对于此 TOML 文件
+# password = 'your-password'
+# password_env = "MYSQL_BACKUP_PASSWORD"  # 从运行本工具的本机读取
+
+# 使用 InnoDB 事务快照，不主动锁表；不支持 false 或全局锁表模式。
+# 逐库导出不要求多个库快照时间一致；备份仍有 CPU/I/O 开销。
+# single_transaction = true
+
+[sync]
+type = "none"        # none 只保存在本机；oss 上传到阿里云 OSS
+
+# OSS 同步：将上方 type 改为 "oss"，再填写以下配置。
+oss_bucket = ""      # Bucket 名称，例如 your-bucket；不包含 oss:// 或路径
+oss_prefix = "mysql" # Bucket 内的目录前缀；留空放在根目录下，仍按 name 区分任务
+oss_region = ""      # bucket 所在地域，例如 cn-hangzhou，启用 OSS 时必填
+oss_endpoint = ""    # 可选，例如 https://oss-cn-hangzhou-internal.aliyuncs.com
+# 凭据默认读取 OSS_ACCESS_KEY_ID、OSS_ACCESS_KEY_SECRET，仅支持 AccessKey 认证。
+# 也可在本地配置中填写 AccessKey；不要提交真实凭据：
+oss_access_key_id = ""
+oss_access_key_secret = ""
+
+[dingtalk]
+webhook = ""         # 填机器人 webhook：所有错误告警，普通成功不推送，每 7 天汇总一次
+secret = ""          # 启用加签时填写
+# 也可用 webhook_env、secret_env 指定环境变量名。
+# 周汇总在到期后的下一次执行时发送；只保存一份覆盖更新的统计文件，不生成日志文件。

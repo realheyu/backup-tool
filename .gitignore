@@ -1,0 +1,10 @@
+/backup-tool
+/bin/
+/dist/
+/backups/
+/backup-tool.toml
+*.cnf
+*.partial
+*.log
+.idea/
+.DS_Store
